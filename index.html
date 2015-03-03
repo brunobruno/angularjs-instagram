@@ -1,0 +1,72 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="css.css" media="screen" />
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script> 
+<script>
+var app = angular.module("GridCambiable", []);
+
+app.factory('instagram', ['$http', function($http){
+
+	return {
+		fetchPopular: function(callback){
+            
+            var endPoint = "https://api.instagram.com/v1/media/popular?client_id=642176ece1e7445e99244cec26f4de1f&callback=JSON_CALLBACK";
+            
+            $http.jsonp(endPoint).success(function(response){
+                callback(response.data);
+            });
+		}
+	}
+
+}]);
+
+app.controller('GridCambiableController', ['$scope', 'instagram' ,
+function ($scope, instagram){
+
+
+	$scope.layout = 'grid';
+    
+    $scope.setLayout = function(layout){
+        $scope.layout = layout;
+    };
+    
+    $scope.isLayout = function(layout){
+        return $scope.layout == layout;
+    };
+
+	$scope.pics = [];
+
+	instagram.fetchPopular(function(data){
+
+		$scope.pics = data;
+	});
+
+}]);
+</script>
+</head>
+<body>
+<div ng-app="GridCambiable" ng-controller="GridCambiableController">
+
+	<div class="bar">
+
+
+		<a class="list-icon" ng-class="{active: isLayout('list')}" ng-click="setLayout('list')"></a>
+		<a class="grid-icon" ng-class="{active: isLayout('grid')}" ng-click="setLayout('grid')"></a>
+	</div>
+
+
+	<ul ng-show="isLayout('grid')" class="grid">
+		<li ng-repeat="p in pics">
+			<a href="{{p.link}}" target="_blank"><img ng-src="{{p.images.low_resolution.url}}" /></a>
+		</li>
+	</ul>
+
+	<ul ng-show="isLayout('list')" class="list">
+		<li ng-repeat="p in pics">
+			<a href="{{p.link}}" target="_blank"><img ng-src="{{p.images.thumbnail.url}}" /></a>
+			<p>{{p.caption.text}}</p>
+		</li>
+	</ul>
+</div>
+</body>
+<html>
